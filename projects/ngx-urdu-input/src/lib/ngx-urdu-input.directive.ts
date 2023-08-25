@@ -17,6 +17,7 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this._listener = this.r2.listen(this.el.nativeElement, 'keypress', this.captureUrduEvent.bind(this))
     this.el.nativeElement.style.direction = 'rtl';
+    this.el.nativeElement.style.textAlign = 'right';
     this.el.nativeElement.classList.add('ngx-urdu-input')
   }
 
