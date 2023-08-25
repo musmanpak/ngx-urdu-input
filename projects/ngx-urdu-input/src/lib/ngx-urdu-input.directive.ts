@@ -3,7 +3,7 @@ import { AfterViewInit, Directive, ElementRef, OnDestroy, Renderer2 } from '@ang
 @Directive({
   selector: '[ngxInputUrdu]'
 })
-export class NgxInputUrduDirective implements AfterViewInit, OnDestroy {
+export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
 
   private _listener: () => void;
 
@@ -16,6 +16,7 @@ export class NgxInputUrduDirective implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this._listener = this.r2.listen(this.el.nativeElement, 'keypress', this.captureUrduEvent.bind(this))
+    this.el.nativeElement.classList.add('ngx-urdu-input')
   }
 
   ngOnDestroy() {

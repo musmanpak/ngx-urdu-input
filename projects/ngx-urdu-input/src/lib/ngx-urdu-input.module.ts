@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
-import { NgxInputUrduDirective } from './ngx-input-urdu.directive';
+import { NgxUrduInputDirective } from './ngx-urdu-input.directive';
 
 
 
 @NgModule({
   declarations: [
-    NgxInputUrduDirective
+    NgxUrduInputDirective
   ],
   imports: [
   ],
   exports: [
-    NgxInputUrduDirective
+    NgxUrduInputDirective
   ]
 })
 export class NgxUrduInputModule { }

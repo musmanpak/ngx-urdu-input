@@ -14,18 +14,18 @@ To integrate this directive into your Angular application, follow these simple s
 
 2. **Import the Module:**
 
-   Import the `NgxUrduInputModule` into your app module:
+   Import the `NgxInputUrduModule` into your app module:
 
     ```typescript
     import { NgModule } from '@angular/core';
     import { BrowserModule } from '@angular/platform-browser';
-    import { NgxUrduInputModule } from 'ngx-urdu-input';
+    import { NgxInputUrduModule } from 'ngx-urdu-input';
 
     import { AppComponent } from './app.component';
 
     @NgModule({
       declarations: [AppComponent],
-      imports: [BrowserModule, NgxUrduInputModule],
+      imports: [BrowserModule, NgxInputUrduModule],
       bootstrap: [AppComponent],
     })
     export class AppModule {}
