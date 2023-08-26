@@ -1,4 +1,4 @@
-import { AfterViewInit, Directive, ElementRef, OnDestroy, Renderer2 } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, NgZone, OnDestroy, Renderer2 } from '@angular/core';
 
 @Directive({
   selector: '[ngxInputUrdu]'
@@ -8,8 +8,10 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
   private _listener: () => void;
 
   constructor(
+    private zn: NgZone,
     private el: ElementRef,
-    private r2: Renderer2
+    private r2: Renderer2,
+    private cdr: ChangeDetectorRef
   ) {
   }
 
@@ -244,7 +246,9 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
     let target: any;
     if (evt.target) target = evt.target;
     else target = evt.srcElement; //for IE
-    this.KeyPress(target, evt);
+    this.zn.run(() => {
+      this.KeyPress(target, evt);
+    });
   }
 
   getNextUrduLayoutState(lastInput: string, currentInput: string) {
@@ -280,6 +284,7 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
         evt.cancelBubble = true;
       }
     }
+    this.cdr.detectChanges();
   }
 
 
