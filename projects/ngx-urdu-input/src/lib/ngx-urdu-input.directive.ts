@@ -1,19 +1,19 @@
-import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, NgZone, OnDestroy, Renderer2 } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, OnDestroy, Renderer2 } from '@angular/core';
+import { NgControl } from '@angular/forms';
 
 @Directive({
   selector: '[ngxInputUrdu]'
 })
 export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
 
-  private _listener: () => void;
-
   constructor(
-    private zn: NgZone,
-    private el: ElementRef,
+    private nc: NgControl,
     private r2: Renderer2,
-    private cdr: ChangeDetectorRef
+    private el: ElementRef
   ) {
   }
+
+  private _listener: () => void;
 
 
   ngAfterViewInit() {
@@ -27,6 +27,100 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
     if (this._listener) {
       this._listener();
     }
+  }
+
+  captureUrduEvent(evt: KeyboardEvent) {
+    this.KeyPress(evt);
+  }
+
+  getNextUrduLayoutState(currentInput: string) {
+    return String.fromCharCode(
+      <number>this.getUrduUnicode(currentInput)
+    );
+  }
+
+  KeyPress(evt: KeyboardEvent): void {
+    let keyCode: number;
+    let keyChar: string;
+    if (evt) {
+      keyCode = evt.keyCode;
+      if (evt.ctrlKey || evt.altKey || keyCode === 0) {
+        return;
+      }
+    } else {
+      alert("Wrong version");
+      return;
+    }
+    // evt.returnValue = false;
+    keyChar = String.fromCharCode(keyCode);
+
+    if (this.isValidAlphabet(keyChar)) {
+      const apnaChar = this.getNextUrduLayoutState(keyChar);
+      // const textbox = this.el.nativeElement;
+      if (apnaChar == keyChar) {
+        this.replaceEndOfWord(this.findLastChar());
+      }
+
+      this.insertAtCaret(apnaChar);
+      if (evt.preventDefault) {
+        evt.preventDefault();
+        evt.cancelBubble = true;
+      }
+    }
+  }
+
+
+  isValidAlphabet(character: string): boolean {
+    return this.getNextUrduLayoutState(character) != "";
+
+  }
+
+  replaceEndOfWord(character: string): void {
+    const nayaChar: string = String.fromCharCode(character.charCodeAt(0));
+
+    if (nayaChar !== character) {
+      this.eraseLastChar();
+      this.insertAtCaret(nayaChar);
+    }
+  }
+
+  findLastChar(): string {
+    let startPos = this.el.nativeElement.selectionStart;
+    let endPos: number | null = this.el.nativeElement.selectionEnd;
+    startPos = startPos - 1;
+    endPos = startPos + 1;
+    return this.el.nativeElement.value.substring(startPos, endPos);
+  }
+
+  eraseLastChar() {
+    const txtarea = this.el.nativeElement;
+    const startPos = txtarea.selectionStart - 1;
+    const endPos = txtarea.selectionEnd;
+    const scrollTop = txtarea.scrollTop;
+    const newValue = txtarea.value.substring(0, startPos) +
+      txtarea.value.substring(endPos, txtarea.value.length);
+    this.nc.reset(newValue);
+    const cPos = startPos;
+    txtarea.selectionStart = cPos;
+    txtarea.selectionEnd = cPos;
+    txtarea.scrollTop = scrollTop;
+  }
+
+  insertAtCaret(text: any) {
+    var txtarea = this.el.nativeElement;
+    const startPos = txtarea.selectionStart;
+    const endPos = txtarea.selectionEnd;
+    const scrollTop = txtarea.scrollTop;
+    const newValue =
+      txtarea.value.substring(0, startPos) +
+      text +
+      txtarea.value.substring(endPos, txtarea.value.length);
+    this.nc.reset(newValue);
+    txtarea.focus();
+    const cPos = startPos + text.length;
+    txtarea.selectionStart = cPos;
+    txtarea.selectionEnd = cPos;
+    txtarea.scrollTop = scrollTop;
   }
 
   getUrduUnicode(temp: any) {
@@ -241,135 +335,6 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
 
     return keyChar;
   } //function
-
-  captureUrduEvent(evt: { target: any; srcElement: any; }) {
-    let target: any;
-    if (evt.target) target = evt.target;
-    else target = evt.srcElement; //for IE
-    this.KeyPress(target, evt);
-  }
-
-  getNextUrduLayoutState(lastInput: string, currentInput: string) {
-    return String.fromCharCode(
-      <number>this.getUrduUnicode(currentInput)
-    );
-  }
-
-  KeyPress(textbox: any, evt: any): void {
-    let keyCode: number;
-    let keyChar: string;
-    if (evt) {
-      keyCode = evt.keyCode;
-      if (evt.ctrlKey == true || evt.altKey == true || keyCode === 0) {
-        return;
-      }
-    } else {
-      alert("Wrong version");
-      return;
-    }
-    evt.returnValue = false;
-    keyChar = String.fromCharCode(keyCode);
-
-    if (this.isValidAlphabet(keyChar)) {
-      const apnaChar = this.getNextUrduLayoutState(this.findLastChar(textbox), keyChar);
-      if (apnaChar == keyChar) {
-        this.replaceEndOfWord(textbox, this.findLastChar(textbox));
-      }
-
-      this.insertAtCaret(textbox, apnaChar);
-      if (evt.preventDefault) {
-        evt.preventDefault();
-        evt.cancelBubble = true;
-      }
-    }
-    this.cdr.detectChanges();
-  }
-
-
-  isValidAlphabet(character: string): boolean {
-    return this.getNextUrduLayoutState("", character) != "";
-
-  }
-
-  replaceEndOfWord(textbox: any, character: string): void {
-    const nayaChar: string = String.fromCharCode(character.charCodeAt(0));
-
-    if (nayaChar !== character) {
-      this.eraseLastChar(textbox);
-      this.insertAtCaret(textbox, nayaChar);
-    }
-  }
-
-  findLastChar(textbox: any): string {
-    if (textbox.createTextRange) {
-      let range: any;
-      if ((document as any).selection) {
-        range = (document as any).selection.createRange().duplicate();
-      } else {
-        range = textbox.createTextRange();
-      }
-      range.moveStart("character", -1);
-      return range.text;
-    } else if (textbox.selectionStart !== undefined) {
-      let startPos = textbox.selectionStart;
-      let endPos: number | null = textbox.selectionEnd;
-      startPos = startPos - 1;
-      endPos = startPos + 1;
-      return textbox.value.substring(startPos, endPos);
-    }
-    return "";
-  }
-
-  eraseLastChar(textbox: any) {
-    if (textbox.createTextRange) {
-      var range = (document as any).selection.createRange().duplicate();
-      range.moveStart("character", -1);
-      range.text = "";
-    } else {
-      var txtarea = textbox;
-      var startPos = txtarea.selectionStart - 1;
-      var endPos = txtarea.selectionEnd;
-      var scrollTop = txtarea.scrollTop;
-      this.r2.setProperty(txtarea, 'value', txtarea.value.substring(0, startPos) +
-        txtarea.value.substring(endPos, txtarea.value.length));
-      var cPos = startPos;
-      txtarea.selectionStart = cPos;
-      txtarea.selectionEnd = cPos;
-      txtarea.scrollTop = scrollTop;
-    }
-  }
-
-  insertAtCaret(textbox: any, text: any) {
-    var txtarea = textbox;
-
-    if ((document as any).selection) {
-      var CaretPos;
-      if (textbox.createTextRange) {
-        CaretPos = (document as any).selection.createRange().duplicate();
-        CaretPos.text = text;
-      }
-      //handling of ENTER in IE for textarea needs to be handled
-      //alert("CaretPos="+CaretPos.text);
-    } else if (txtarea.selectionStart || txtarea.selectionStart == "0") {
-      var startPos = txtarea.selectionStart;
-      var endPos = txtarea.selectionEnd;
-      var scrollTop = txtarea.scrollTop;
-      var myText = txtarea.value.substring(startPos, endPos);
-      //alert("myText="+myText);
-      if (!myText) {
-        myText = text;
-      }
-      this.r2.setProperty(txtarea, 'value', txtarea.value.substring(0, startPos) +
-        text +
-        txtarea.value.substring(endPos, txtarea.value.length));
-      txtarea.focus();
-      var cPos = startPos + text.length;
-      txtarea.selectionStart = cPos;
-      txtarea.selectionEnd = cPos;
-      txtarea.scrollTop = scrollTop;
-    }
-  }
-
 
 }
 
@@ -629,5 +594,6 @@ const aSPACE = " ";
 const aENTER = "\r";
 const aNLINE = "\n";
 const aTAB = "\t";
+
 
 
