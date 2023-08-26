@@ -246,9 +246,7 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
     let target: any;
     if (evt.target) target = evt.target;
     else target = evt.srcElement; //for IE
-    this.zn.run(() => {
-      this.KeyPress(target, evt);
-    });
+    this.KeyPress(target, evt);
   }
 
   getNextUrduLayoutState(lastInput: string, currentInput: string) {
@@ -332,9 +330,8 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
       var startPos = txtarea.selectionStart - 1;
       var endPos = txtarea.selectionEnd;
       var scrollTop = txtarea.scrollTop;
-      txtarea.value =
-        txtarea.value.substring(0, startPos) +
-        txtarea.value.substring(endPos, txtarea.value.length);
+      this.r2.setProperty(txtarea, 'value', txtarea.value.substring(0, startPos) +
+        txtarea.value.substring(endPos, txtarea.value.length));
       var cPos = startPos;
       txtarea.selectionStart = cPos;
       txtarea.selectionEnd = cPos;
@@ -362,10 +359,9 @@ export class NgxUrduInputDirective implements AfterViewInit, OnDestroy {
       if (!myText) {
         myText = text;
       }
-      txtarea.value =
-        txtarea.value.substring(0, startPos) +
+      this.r2.setProperty(txtarea, 'value', txtarea.value.substring(0, startPos) +
         text +
-        txtarea.value.substring(endPos, txtarea.value.length);
+        txtarea.value.substring(endPos, txtarea.value.length));
       txtarea.focus();
       var cPos = startPos + text.length;
       txtarea.selectionStart = cPos;
